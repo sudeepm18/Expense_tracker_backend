@@ -1,28 +1,26 @@
-# Build stage
+# ---------- Base Image ----------
 FROM node:18-alpine
 
-# Set working directory
+# ---------- App Directory ----------
 WORKDIR /app
 
-# Copy package.json and package-lock.json
+# ---------- Install Dependencies First (Caching) ----------
 COPY package*.json ./
+RUN npm ci --omit=dev
 
-# Install dependencies
-RUN npm ci --only=production
-
-# Copy application code
+# ---------- Copy Application Code ----------
 COPY . .
 
-# Set default environment variables (can be overridden at runtime)
+# ---------- Environment Defaults ----------
 ENV NODE_ENV=production
 ENV PORT=3000
 
-# Expose port (adjust based on your server port, typically 3000 or 5000)
+# ---------- Expose Port ----------
 EXPOSE 3000
 
-# Health check
-HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
-  CMD node -e "require('http').get('http://localhost:3000', (r) => {if (r.statusCode !== 200) throw new Error(r.statusCode)})"
+# ---------- Health Check ----------
+HEALTHCHECK --interval=30s --timeout=3s --start-period=10s --retries=3 \
+  CMD node -e "require('http').get('http://localhost:' + process.env.PORT, r => { if (r.statusCode !== 200) process.exit(1) })"
 
-# Start the application
+# ---------- Start Application ----------
 CMD ["node", "index.js"]
