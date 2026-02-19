@@ -13,6 +13,10 @@ RUN npm ci --only=production
 # Copy application code
 COPY . .
 
+# Set default environment variables (can be overridden at runtime)
+ENV NODE_ENV=production
+ENV PORT=3000
+
 # Expose port (adjust based on your server port, typically 3000 or 5000)
 EXPOSE 3000
 
